@@ -2,16 +2,16 @@ import { createContext, useEffect, useState } from 'react';
 
 export const OpinionsContext = createContext({
   opinions: null,
-  addOpinion: (opinion) => {},
-  upvoteOpinion: (id) => {},
-  downvoteOpinion: (id) => {},
+  addOpinion: ( opinion ) => {},
+  upvoteOpinion: ( id ) => {},
+  downvoteOpinion: ( id ) => {},
 });
 
-export function OpinionsContextProvider({ children }) {
-  const [opinions, setOpinions] = useState();
+export function OpinionsContextProvider ( {children} ) {
+  const [ opinions, setOpinions ] = useState();
 
   useEffect(() => {
-    async function loadOpinions() {
+    async function loadOpinions () {
       const response = await fetch('http://localhost:3000/opinions');
       const opinions = await response.json();
       setOpinions(opinions);
@@ -20,7 +20,7 @@ export function OpinionsContextProvider({ children }) {
     loadOpinions();
   }, []);
 
-  async function addOpinion(enteredOpinionData) {
+  async function addOpinion ( enteredOpinionData ) {
     const response = await fetch('http://localhost:3000/opinions', {
       method: 'POST',
       headers: {
@@ -34,25 +34,45 @@ export function OpinionsContextProvider({ children }) {
     }
 
     const savedOpinion = await response.json();
-    setOpinions((prevOpinions) => [savedOpinion, ...prevOpinions]);
+    setOpinions(( prevOpinions ) => [ savedOpinion, ...prevOpinions ]);
   }
 
-  function upvoteOpinion(id) {
-    setOpinions((prevOpinions) => {
-      return prevOpinions.map((opinion) => {
+  async function upvoteOpinion ( id ) {
+    const response = await fetch(
+      'http://localhost:3000/opinions/' + id + '/upvote',
+      {
+        method: 'POST',
+      }
+    );
+
+    if (!response.ok) {
+      return;
+    }
+    setOpinions(( prevOpinions ) => {
+      return prevOpinions.map(( opinion ) => {
         if (opinion.id === id) {
-          return { ...opinion, votes: opinion.votes + 1 };
+          return {...opinion, votes: opinion.votes + 1};
         }
         return opinion;
       });
     });
   }
 
-  function downvoteOpinion(id) {
-    setOpinions((prevOpinions) => {
-      return prevOpinions.map((opinion) => {
+  async function downvoteOpinion ( id ) {
+    const response = await fetch(
+      'http://localhost:3000/opinions/' + id + '/downvote',
+      {
+        method: 'POST',
+      }
+    );
+
+    if (!response.ok) {
+      return;
+    }
+    setOpinions(( prevOpinions ) => {
+      return prevOpinions.map(( opinion ) => {
         if (opinion.id === id) {
-          return { ...opinion, votes: opinion.votes - 1 };
+          return {...opinion, votes: opinion.votes - 1};
         }
         return opinion;
       });
